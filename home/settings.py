@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import django_heroku
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,7 +26,7 @@ SECRET_KEY = 'ltwftoo@q_10tcwd9==3fr*fxy9&de0n&xi_^_i5mh1!_$^z*t'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['beaglebone.local']
+ALLOWED_HOSTS = [".herokuapp.com", "localhost"]
 
 
 # Application definition
@@ -121,3 +122,18 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+S3_BUCKET = "bhalerao"
+STATICFILES_STORAGE = "django_s3_storage.storage.StaticS3Storage"
+
+AWS_S3_BUCKET_NAME_STATIC = S3_BUCKET
+
+STATIC_URL = "https://%s.s3.amazonaws.com/" % S3_BUCKET
+AWS_REGION = "us-east-2"
+
+AWS_ACCESS_KEY_ID = "AKIA4IKJCPOCAMWJ5C4O"
+AWS_SECRET_ACCESS_KEY = "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"
+AWS_DEFAULT_ACL = None
+
+# Activate Django-Heroku.
+django_heroku.settings(locals())
