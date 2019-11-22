@@ -123,7 +123,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-S3_BUCKET = "bhalerao"
+S3_BUCKET = os.environ.get('S3_BUCKET')
 STATICFILES_STORAGE = "django_s3_storage.storage.StaticS3Storage"
 
 AWS_S3_BUCKET_NAME_STATIC = S3_BUCKET
@@ -131,8 +131,8 @@ AWS_S3_BUCKET_NAME_STATIC = S3_BUCKET
 STATIC_URL = "https://%s.s3.amazonaws.com/" % S3_BUCKET
 AWS_REGION = "us-east-2"
 
-AWS_ACCESS_KEY_ID = "AKIA4IKJCPOCAMWJ5C4O"
-AWS_SECRET_ACCESS_KEY = "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"
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 AWS_DEFAULT_ACL = None
 
 # Activate Django-Heroku.
