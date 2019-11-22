@@ -10,6 +10,10 @@ class Student(models.Model):
     def __str__(self):
         return self.name
 
+class Menu(models.Model):
+
+    url = models.URLField()
+
 
 class PlanManager(models.Manager):
     

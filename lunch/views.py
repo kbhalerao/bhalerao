@@ -1,21 +1,23 @@
 from django.shortcuts import render
 from rest_framework import viewsets
 from lunch.serializers import PlanSerializer
-from lunch.models import Plan, Student
+from lunch.models import Plan, Student, Menu
 from django.views.generic.base import TemplateView
 from django.utils import timezone
 import datetime
 from django.views.generic import View
 from django.http import JsonResponse
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 
 # Create your views here.
 
-class PlanViewSet(viewsets.ModelViewSet):
+class PlanViewSet(LoginRequiredMixin, viewsets.ModelViewSet):
     
     queryset = Plan.objects.all()
     serializer_class = PlanSerializer
 
-class LunchView(TemplateView):
+class LunchView(LoginRequiredMixin, TemplateView):
     
     template_name = "lunch/lunchview.html"
     
@@ -37,6 +39,7 @@ class LunchView(TemplateView):
         context['end'] = end_week
         context['students'] = Student.objects.all()
         context['show_next'] = True
+        context['menu'] = Menu.objects.last()
         return context
         
     
@@ -56,7 +59,7 @@ class NextWeekPlan(LunchView):
         context['show_next'] = False
         return context
 
-class SwitchPlan(View):
+class SwitchPlan(LoginRequiredMixin, View):
     
     def post(self, request, pk, *args, **kwargs):
         
