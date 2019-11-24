@@ -1,139 +1,158 @@
 {% load humanize %}
 <!DOCTYPE html>
 <html>
-    <head>
-        <style>
-            table, th, td {
-              border: 1px solid black;
-              padding: 4px; 
-            }
-            span {
-              border: 1px solid blue; 
-              padding: 4px; 
-              }
-            
-            tr.drag {
-              background-color: yellow; 
-              }
-            tr {
-              background-color: white; 
-              }
-        </style>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    </head>
-    <body>
+<head>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            padding: 4px;
+        }
 
-        <h1>Lunch Schedule {{ start|date:"D, M j" }} through {{ end|date:"D, M j Y" }}</h1>
-        {% csrf_token %}
-        <div style="width:30%; float:left">
-            <div class="result">
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Day</th>
-                        <th>Hot Lunch</th>
-                        <th>Cold Lunch</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for obj in thisweek %}
-                    <tr class="row">
-                        <td>{{ obj.0|date:"D" }}</td>
-                        <td name="H">
-                        {% for p in obj.1 %}
-                            <span class="event" id="{{ p.id }}" draggable="true">{{ p.student }}</span>
-                        {% endfor %} 
-                        </td>
-                        <td name="C">
-                        {% for p in obj.2 %}
-                            <span class="event" id="{{ p.id }}" draggable="true">{{ p.student }}</span>
-                        {% endfor %} 
-                        </td>
-                    </tr>
+        span {
+            border: 1px solid blue;
+            padding: 4px;
+        }
+
+        tr.drag {
+            background-color: yellow;
+        }
+
+        tr {
+            background-color: white;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
+<body>
+
+<h1>Lunch Schedule {{ start|date:"D, M j" }} through {{ end|date:"D, M j Y" }}</h1>
+{% csrf_token %}
+<div style="width:30%; float:left">
+    <div class="result">
+    </div>
+    <input type="button" id="btn_ems" value="EMS Menu" data="{{ menu.ems }}">
+    <input type="button" id="btn_cb" value="CB Menu" data="{{ menu.cb }}">
+    <h3 id="menu_name">Carrie Busey</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>Day</th>
+            <th>Hot Lunch</th>
+            <th>Cold Lunch</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for obj in thisweek %}
+            <tr class="row">
+                <td>{{ obj.0|date:"D" }}</td>
+                <td name="H">
+                    {% for p in obj.1 %}
+                        <span class="event" id="{{ p.id }}" draggable="true">{{ p.student }}</span>
                     {% endfor %}
-                </tbody>
-            </table>
-            <div>
-            {% if show_next %}
+                </td>
+                <td name="C">
+                    {% for p in obj.2 %}
+                        <span class="event" id="{{ p.id }}" draggable="true">{{ p.student }}</span>
+                    {% endfor %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <div>
+        {% if show_next %}
             <a href="{% url 'next_week' %}">Next Week >></a>
-            {% else %} 
+        {% else %}
             <a href="/"><< Current Week</a>
-            {% endif %}
-            </div> 
-        </div>
-        <div style="float:right; width:70%">
-            <iframe height="600" width="100%" src="{{ menu.url }}"></iframe>
-        </div>
-        <script>
-            var data; 
-            
-            function getCookie(name) {
-                var cookieValue = null;
-                if (document.cookie && document.cookie !== '') {
-                    var cookies = document.cookie.split(';');
-                    for (var i = 0; i < cookies.length; i++) {
-                        var cookie = cookies[i].trim();
-                        // Does this cookie string begin with the name we want?
-                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
-                        }
-                    }
+        {% endif %}
+    </div>
+</div>
+<div style="float:right; width:70%">
+    <iframe id="menu_window" height="600" width="100%" src="{{ menu.cb }}"></iframe>
+</div>
+<script>
+    var data;
+
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
                 }
-                return cookieValue;
             }
-            var csrftoken = getCookie('csrftoken');
+        }
+        return cookieValue;
+    }
 
-            function csrfSafeMethod(method) {
-                // these HTTP methods do not require CSRF protection
-                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    var csrftoken = getCookie('csrftoken');
+
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
             }
-            $.ajaxSetup({
-                beforeSend: function(xhr, settings) {
-                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                    }
-                }
-            });
-            
-            $(document).ready(function () {
-            $(".event").on("dragstart",function(event){
-                var dt = event.originalEvent.dataTransfer;
-                var node = event.target;
-                var row = $(node).closest("tr").addClass("drag")
+        }
+    });
 
-                dt.setData('text/html', node.innerHTML);
-                dt.setData('text/plain',node.id);
-                event.stopPropagation();
-            });
-            $(".event").on("dragend",function(e){
-                event.preventDefault();event.stopPropagation();
-            })
+    $(document).ready(function () {
+        $(".event").on("dragstart", function (event) {
+            var dt = event.originalEvent.dataTransfer;
+            var node = event.target;
+            var row = $(node).closest("tr").addClass("drag")
 
-            $(".row > td").on("dragenter dragover dragleave",function(e){
-                        event.preventDefault();event.stopPropagation();
-            })
-            $(".row > td").on("drop",function(event){
-                
-               var dragObjId = event.originalEvent.dataTransfer.getData("text/plain");
-                data = $("#"+dragObjId);
-                var dropTarget = $(event.target).closest("td");
-                var dropRow = $(event.target).closest("tr")
-                if($(dropRow).hasClass("drag")) {
-                    $(dropRow).removeClass("drag"); 
-                    $(dropTarget).prepend(data);
-                    var id = $(data).prop('id'); 
-                    var state = $(dropTarget).attr("name"); 
-                    console.log(state); 
-                    $.post( "/lunch/switch/" + id + "/", 
-                        {'status': state }, 
-                        function( data ) {
-                      $( ".result" ).html( data );
-                    });
-                }
-            });
+            dt.setData('text/html', node.innerHTML);
+            dt.setData('text/plain', node.id);
+            event.stopPropagation();
+        });
+        $(".event").on("dragend", function (e) {
+            event.preventDefault();
+            event.stopPropagation();
         })
-        </script>
-        </body>
+
+        $(".row > td").on("dragenter dragover dragleave", function (e) {
+            event.preventDefault();
+            event.stopPropagation();
+        })
+        $(".row > td").on("drop", function (event) {
+
+            var dragObjId = event.originalEvent.dataTransfer.getData("text/plain");
+            data = $("#" + dragObjId);
+            var dropTarget = $(event.target).closest("td");
+            var dropRow = $(event.target).closest("tr")
+            if ($(dropRow).hasClass("drag")) {
+                $(dropRow).removeClass("drag");
+                $(dropTarget).prepend(data);
+                var id = $(data).prop('id');
+                var state = $(dropTarget).attr("name");
+                console.log(state);
+                $.post("/lunch/switch/" + id + "/",
+                    {'status': state},
+                    function (data) {
+                        $(".result").html(data);
+                    });
+            }
+        });
+        $("input#btn_ems").on('click', function () {
+            var url = $("input#btn_ems").attr('data');
+            $("iframe#menu_window").attr('src', url);
+            $("h3#menu_name").html("Edison");
+        })
+        $("input#btn_cb").on('click', function () {
+            var url = $("input#btn_cb").attr('data');
+            $("iframe#menu_window").attr('src', url);
+            $("h3#menu_name").html("Carrie Busey");
+        })
+    })
+</script>
+</body>
 </html>

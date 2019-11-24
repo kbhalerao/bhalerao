@@ -12,7 +12,8 @@ class Student(models.Model):
 
 class Menu(models.Model):
 
-    url = models.URLField()
+    ems = models.URLField(help_text="Edison Menu")
+    cb = models.URLField(help_text="Carrie Busey Menu")
 
 
 class PlanManager(models.Manager):
